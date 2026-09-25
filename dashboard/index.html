@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Дашборд дохода</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1>Дашборд дохода</h1>
+
+  <section id="goal">
+    <h2>Цель: 1 000 000 ₽</h2>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <p id="progressText">0 ₽ / 1 000 000 ₽ (0%)</p>
+  </section>
+
+  <section id="summary">
+    <div><span class="label">Доход</span><span id="totalIncome">0</span> ₽</div>
+    <div><span class="label">Расход</span><span id="totalExpense">0</span> ₽</div>
+    <div><span class="label">Остаток</span><span id="balance">0</span> ₽</div>
+    <div><span class="label">Норма сбережений</span><span id="savingsRate">0</span>%</div>
+  </section>
+
+  <section id="addOperation">
+    <h2>Добавить операцию</h2>
+    <input type="text" id="opName" placeholder="Название">
+    <input type="number" id="opAmount" placeholder="Сумма">
+    <select id="opType">
+      <option value="income">Доход</option>
+      <option value="expense">Расход</option>
+    </select>
+    <button id="addBtn">Добавить</button>
+  </section>
+
+  <section id="operationsList">
+    <h2>Операции</h2>
+    <ul id="list"></ul>
+  </section>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
