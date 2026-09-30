@@ -1,25 +1,45 @@
-const operations = [];
+const operations = JSON.parse(localStorage.getItem('operations') || '[]');
+
+function save() {
+  localStorage.setItem('operations', JSON.stringify(operations));
+}
 
 function render() {
   const list = document.getElementById('list');
   list.innerHTML = '';
 
+  if (operations.length === 0) {
+    const empty = document.createElement('li');
+    empty.textContent = 'Пока нет операций. Добавь первую.';
+    empty.style.color = 'var(--text-muted)';
+    empty.style.justifyContent = 'center';
+    list.appendChild(empty);
+    updateSummary();
+    save();
+    return;
+  }
+
   operations.forEach((op, index) => {
     const li = document.createElement('li');
-    li.textContent = `${op.name} — ${op.amount} ₽ (${op.type === 'income' ? 'доход' : 'расход'})`;
-    
+
+    const info = document.createElement('span');
+    info.textContent = `${op.name} — ${op.amount.toLocaleString('ru-RU')} ₽ (${op.type === 'income' ? 'доход' : 'расход'})`;
+    info.style.color = op.type === 'income' ? 'var(--green)' : 'var(--red)';
+
     const delBtn = document.createElement('button');
     delBtn.textContent = 'Удалить';
     delBtn.onclick = () => {
       operations.splice(index, 1);
       render();
     };
-    
+
+    li.appendChild(info);
     li.appendChild(delBtn);
     list.appendChild(li);
   });
 
   updateSummary();
+  save();
 }
 
 const GOAL = 1_000_000;
