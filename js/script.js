@@ -1,11 +1,18 @@
 const operations = JSON.parse(localStorage.getItem('operations') || '[]');
 
+const addBtn = document.getElementById('addBtn');
+const opName = document.getElementById('opName');
+const opAmount = document.getElementById('opAmount');
+const opType = document.getElementById('opType');
+const list = document.getElementById('list');
+
+const GOAL = 1_000_000;
+
 function save() {
   localStorage.setItem('operations', JSON.stringify(operations));
 }
 
 function render() {
-  const list = document.getElementById('list');
   list.innerHTML = '';
 
   if (operations.length === 0) {
@@ -41,8 +48,6 @@ function render() {
   updateSummary();
   save();
 }
-
-const GOAL = 1_000_000;
 
 function updateSummary() {
   const income = operations
@@ -91,4 +96,6 @@ addBtn.onclick = () => {
 
 opAmount.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') addBtn.click();
-})
+});
+
+render();
