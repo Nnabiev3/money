@@ -1,72 +1,191 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Дашборд дохода</title>
+  <title>Money — личные финансы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>Дашборд дохода</h1>
+  <div class="bg-glow"></div>
 
-  <section id="goal">
-    <h2>Цель: 1 000 000 ₽</h2>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill"></div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">₽</div>
+      <div>
+        <h1>Money</h1>
+        <p class="subtitle">Личный финансовый дашборд</p>
+      </div>
     </div>
-    <p id="progressText">0 ₽ / 1 000 000 ₽ (0%)</p>
-  </section>
+    <div class="topbar-actions">
+      <select id="periodSelect" title="Период"></select>
+      <button class="icon-btn" id="themeBtn" title="Сменить тему">🌓</button>
+      <button class="icon-btn" id="settingsBtn" title="Настройки">⚙️</button>
+    </div>
+  </header>
 
-<section id="monthGoal">
-  <h2>Цель на <span id="currentMonth"></span></h2>
-  <div class="progress-bar">
-    <div class="progress-fill" id="monthProgressFill"></div>
-  </div>
-  <p id="monthProgressText">0 ₽ / 100 000 ₽ (0%)</p>
-  <div class="month-controls">
-    <label>
-      Цель:
-      <input type="number" id="monthTargetInput" value="100000" min="0" step="1000">
-      ₽
-    </label>
-  </div>
-</section>
+  <main class="grid">
+    <!-- KPI -->
+    <section class="card kpi kpi-income">
+      <span class="kpi-label">Доход</span>
+      <span class="kpi-value" id="totalIncome">0</span>
+      <span class="kpi-sub" id="incomeCount">0 операций</span>
+    </section>
+    <section class="card kpi kpi-expense">
+      <span class="kpi-label">Расход</span>
+      <span class="kpi-value" id="totalExpense">0</span>
+      <span class="kpi-sub" id="expenseCount">0 операций</span>
+    </section>
+    <section class="card kpi kpi-balance">
+      <span class="kpi-label">Остаток</span>
+      <span class="kpi-value" id="balance">0</span>
+      <span class="kpi-sub">доход − расход</span>
+    </section>
+    <section class="card kpi kpi-rate">
+      <span class="kpi-label">Норма сбережений</span>
+      <span class="kpi-value" id="savingsRate">0%</span>
+      <span class="kpi-sub">доля отложенного</span>
+    </section>
 
-  <section id="summary">
-    <div><span class="label">Доход</span><span id="totalIncome">0</span> ₽</div>
-    <div><span class="label">Расход</span><span id="totalExpense">0</span> ₽</div>
-    <div><span class="label">Остаток</span><span id="balance">0</span> ₽</div>
-    <div><span class="label">Норма сбережений</span><span id="savingsRate">0</span>%</div>
-  </section>
+    <!-- Цели -->
+    <section class="card span-2">
+      <div class="card-head">
+        <h2 id="goalTitle">Главная цель</h2>
+        <span class="chip" id="goalPercent">0%</span>
+      </div>
+      <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+      <p class="muted" id="progressText"></p>
+    </section>
 
-<section id="categories">
-  <h2>По категориям</h2>
-  <div class="cat-block">
-    <h3>Доходы</h3>
-    <ul id="incomeByCategory"></ul>
-  </div>
-  <div class="cat-block">
-    <h3>Расходы</h3>
-    <ul id="expenseByCategory"></ul>
-  </div>
-</section>
+    <section class="card span-2">
+      <div class="card-head">
+        <h2>Цель на <span id="currentMonth"></span></h2>
+        <span class="chip chip-purple" id="monthPercent">0%</span>
+      </div>
+      <div class="progress"><div class="progress-fill purple" id="monthProgressFill"></div></div>
+      <p class="muted" id="monthProgressText"></p>
+    </section>
 
-  <section id="addOperation">
-    <h2>Добавить операцию</h2>
-    <input type="text" id="opName" placeholder="Название">
-    <input type="number" id="opAmount" placeholder="Сумма">
-    <select id="opType">
-      <option value="income">Доход</option>
-      <option value="expense">Расход</option>
-    </select>
-		<select id="opCategory"></select>
-    <button id="addBtn">Добавить</button>
-  </section>
+    <!-- Графики -->
+    <section class="card span-4">
+      <div class="card-head">
+        <h2>Динамика по месяцам</h2>
+        <div class="legend">
+          <span><i style="background:var(--green)"></i>Доход</span>
+          <span><i style="background:var(--red)"></i>Расход</span>
+          <span><i style="background:var(--accent)"></i>Остаток</span>
+        </div>
+      </div>
+      <div id="barChart" class="chart"></div>
+    </section>
 
-  <section id="operationsList">
-    <h2>Операции</h2>
-    <ul id="list"></ul>
-  </section>
+    <section class="card span-2">
+      <div class="card-head"><h2>Расходы по категориям</h2></div>
+      <div class="donut-wrap">
+        <div id="expenseDonut" class="donut"></div>
+        <ul id="expenseByCategory" class="cat-list"></ul>
+      </div>
+    </section>
+
+    <section class="card span-2">
+      <div class="card-head"><h2>Доходы по категориям</h2></div>
+      <div class="donut-wrap">
+        <div id="incomeDonut" class="donut"></div>
+        <ul id="incomeByCategory" class="cat-list"></ul>
+      </div>
+    </section>
+
+    <!-- Форма -->
+    <section class="card span-4" id="addOperation">
+      <div class="card-head"><h2>Новая операция</h2></div>
+      <form id="opForm" class="op-form">
+        <div class="segmented">
+          <input type="radio" name="opType" id="typeExpense" value="expense" checked>
+          <label for="typeExpense">Расход</label>
+          <input type="radio" name="opType" id="typeIncome" value="income">
+          <label for="typeIncome">Доход</label>
+        </div>
+        <input type="text" id="opName" placeholder="Название" required>
+        <input type="number" id="opAmount" placeholder="Сумма" min="0.01" step="0.01" required>
+        <select id="opCategory"></select>
+        <input type="date" id="opDate">
+        <button type="submit" class="btn-primary">Добавить</button>
+      </form>
+    </section>
+
+    <!-- Список -->
+    <section class="card span-4">
+      <div class="card-head">
+        <h2>Операции</h2>
+        <div class="filters">
+          <input type="search" id="searchInput" placeholder="Поиск…">
+          <select id="filterType">
+            <option value="all">Все</option>
+            <option value="income">Доходы</option>
+            <option value="expense">Расходы</option>
+          </select>
+        </div>
+      </div>
+      <ul id="list" class="op-list"></ul>
+    </section>
+  </main>
+
+  <!-- Настройки -->
+  <dialog id="settingsDialog">
+    <form method="dialog" class="settings">
+      <h2>Настройки</h2>
+
+      <label>Название цели
+        <input type="text" id="setGoalName">
+      </label>
+      <label>Сумма главной цели
+        <input type="number" id="setGoal" min="0" step="1000">
+      </label>
+      <label>Цель на месяц
+        <input type="number" id="monthTargetInput" min="0" step="1000">
+      </label>
+      <label>Валюта
+        <select id="setCurrency">
+          <option value="₽">₽ — рубль</option>
+          <option value="$">$ — доллар</option>
+          <option value="€">€ — евро</option>
+          <option value="₸">₸ — тенге</option>
+          <option value="₴">₴ — гривна</option>
+          <option value="Br">Br — бел. рубль</option>
+          <option value="сум">сум — узб. сум</option>
+        </select>
+      </label>
+
+      <div class="cat-editor">
+        <h3>Категории доходов</h3>
+        <div class="tags" id="incomeTags"></div>
+        <div class="tag-add">
+          <input type="text" id="newIncomeCat" placeholder="Новая категория">
+          <button type="button" data-add="income">+</button>
+        </div>
+      </div>
+      <div class="cat-editor">
+        <h3>Категории расходов</h3>
+        <div class="tags" id="expenseTags"></div>
+        <div class="tag-add">
+          <input type="text" id="newExpenseCat" placeholder="Новая категория">
+          <button type="button" data-add="expense">+</button>
+        </div>
+      </div>
+
+      <div class="data-actions">
+        <button type="button" id="exportBtn">Экспорт JSON</button>
+        <label class="file-btn">Импорт JSON<input type="file" id="importInput" accept="application/json" hidden></label>
+        <button type="button" id="clearBtn" class="danger">Удалить все данные</button>
+      </div>
+
+      <button class="btn-primary" value="close">Готово</button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
 
   <script src="js/script.js"></script>
 </body>
