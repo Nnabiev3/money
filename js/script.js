@@ -44,6 +44,7 @@ function render() {
     list.appendChild(empty);
     updateSummary();
     save();
+		renderCategories();
     return;
   }
 
@@ -68,6 +69,7 @@ function render() {
 
   updateSummary();
   save();
+	renderCategories();
 }
 
 function updateSummary() {
@@ -115,6 +117,53 @@ operations.push({ name, amount, type, category });
 
   render();
 };
+
+function renderCategories() {
+  const incomeList = document.getElementById('incomeByCategory');
+  const expenseList = document.getElementById('expenseByCategory');
+
+  incomeList.innerHTML = '';
+  expenseList.innerHTML = '';
+
+  const grouped = { income: {}, expense: {} };
+
+  operations.forEach(op => {
+    const cat = op.category || 'Без категории';
+    if (!grouped[op.type][cat]) {
+      grouped[op.type][cat] = 0;
+    }
+    grouped[op.type][cat] += op.amount;
+  });
+
+  const fillList = (listEl, data) => {
+    const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+
+    if (entries.length === 0) {
+      const li = document.createElement('li');
+      li.className = 'cat-empty';
+      li.textContent = 'Нет операций';
+      listEl.appendChild(li);
+      return;
+    }
+
+    entries.forEach(([cat, sum]) => {
+      const li = document.createElement('li');
+
+      const name = document.createElement('span');
+      name.textContent = cat;
+
+      const value = document.createElement('span');
+      value.textContent = sum.toLocaleString('ru-RU') + ' ₽';
+
+      li.appendChild(name);
+      li.appendChild(value);
+      listEl.appendChild(li);
+    });
+  };
+
+  fillList(incomeList, grouped.income);
+  fillList(expenseList, grouped.expense);
+}
 
 opAmount.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') addBtn.click();
