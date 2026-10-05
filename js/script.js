@@ -45,6 +45,7 @@ function render() {
     updateSummary();
     save();
 		renderCategories();
+		 updateMonthGoal();
     return;
   }
 
@@ -70,6 +71,45 @@ function render() {
   updateSummary();
   save();
 	renderCategories();
+	 updateMonthGoal();
+}
+
+function getMonthKey(date) {
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+}
+
+function updateMonthGoal() {
+  const now = new Date();
+  const currentKey = getMonthKey(now);
+
+  const monthNames = [
+    'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+    'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
+  ];
+  document.getElementById('currentMonth').textContent =
+    monthNames[now.getMonth()] + ' ' + now.getFullYear();
+
+  const monthOperations = operations.filter(op => op.date && op.date.startsWith(currentKey));
+
+  const income = monthOperations
+    .filter(op => op.type === 'income')
+    .reduce((s, op) => s + op.amount, 0);
+
+  const expense = monthOperations
+    .filter(op => op.type === 'expense')
+    .reduce((s, op) => s + op.amount, 0);
+
+  const saved = income - expense;
+
+  const target = Number(localStorage.getItem('monthTarget')) || 100000;
+  document.getElementById('monthTargetInput').value = target;
+
+  const percent = target > 0 ? Math.min((saved / target) * 100, 100) : 0;
+  const safePercent = Math.max(percent, 0);
+
+  document.getElementById('monthProgressFill').style.width = safePercent + '%';
+  document.getElementById('monthProgressText').textContent =
+    `${saved.toLocaleString('ru-RU')} ₽ / ${target.toLocaleString('ru-RU')} ₽ (${safePercent.toFixed(1)}%)`;
 }
 
 function updateSummary() {
@@ -109,8 +149,8 @@ addBtn.onclick = () => {
   }
 
   const category = opCategory.value;
-operations.push({ name, amount, type, category });
-
+const date = new Date().toISOString();
+operations.push({ name, amount, type, category, date });
   opName.value = '';
   opAmount.value = '';
   opName.focus();
@@ -170,6 +210,14 @@ opAmount.addEventListener('keydown', (e) => {
 });
 
 opType.addEventListener('change', updateCategories);
+
+document.getElementById('monthTargetInput').addEventListener('input', (e) => {
+  const value = Number(e.target.value);
+  if (value >= 0) {
+    localStorage.setItem('monthTarget', value);
+    updateMonthGoal();
+  }
+});
 
 render();
 updateCategories();

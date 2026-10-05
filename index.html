@@ -17,6 +17,21 @@
     <p id="progressText">0 ₽ / 1 000 000 ₽ (0%)</p>
   </section>
 
+<section id="monthGoal">
+  <h2>Цель на <span id="currentMonth"></span></h2>
+  <div class="progress-bar">
+    <div class="progress-fill" id="monthProgressFill"></div>
+  </div>
+  <p id="monthProgressText">0 ₽ / 100 000 ₽ (0%)</p>
+  <div class="month-controls">
+    <label>
+      Цель:
+      <input type="number" id="monthTargetInput" value="100000" min="0" step="1000">
+      ₽
+    </label>
+  </div>
+</section>
+
   <section id="summary">
     <div><span class="label">Доход</span><span id="totalIncome">0</span> ₽</div>
     <div><span class="label">Расход</span><span id="totalExpense">0</span> ₽</div>

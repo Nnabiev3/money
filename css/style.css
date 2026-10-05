@@ -246,3 +246,20 @@ button:active {
   font-size: 13px;
   padding: 8px 12px;
 }
+
+#monthGoal .progress-fill {
+  background: linear-gradient(90deg, var(--accent), #a855f7);
+}
+
+.month-controls {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.month-controls input {
+  width: 110px;
+  margin-left: 8px;
+  padding: 6px 8px;
+  font-size: 14px;
+}
