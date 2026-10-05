@@ -1,5 +1,10 @@
 const operations = JSON.parse(localStorage.getItem('operations') || '[]');
 
+const CATEGORIES = {
+  income: ['Такси', 'Сайты', 'Прочее'],
+  expense: ['Ипотека', 'Еда', 'Транспорт', 'Развлечения', 'Прочее']
+};
+
 const addBtn = document.getElementById('addBtn');
 const opName = document.getElementById('opName');
 const opAmount = document.getElementById('opAmount');
@@ -11,6 +16,22 @@ const GOAL = 1_000_000;
 function save() {
   localStorage.setItem('operations', JSON.stringify(operations));
 }
+
+function updateCategories() {
+  const type = opType.value;
+  const categories = CATEGORIES[type];
+
+  opCategory.innerHTML = '';
+
+  categories.forEach(cat => {
+    const option = document.createElement('option');
+    option.value = cat;
+    option.textContent = cat;
+    opCategory.appendChild(option);
+  });
+}
+
+const opCategory = document.getElementById('opCategory');
 
 function render() {
   list.innerHTML = '';
@@ -30,7 +51,7 @@ function render() {
     const li = document.createElement('li');
 
     const info = document.createElement('span');
-    info.textContent = `${op.name} — ${op.amount.toLocaleString('ru-RU')} ₽ (${op.type === 'income' ? 'доход' : 'расход'})`;
+    info.textContent = `${op.name} — ${op.amount.toLocaleString('ru-RU')} ₽ (${op.type === 'income' ? 'доход' : 'расход'} · ${op.category || 'без категории'})`;
     info.style.color = op.type === 'income' ? 'var(--green)' : 'var(--red)';
 
     const delBtn = document.createElement('button');
@@ -85,7 +106,8 @@ addBtn.onclick = () => {
     return;
   }
 
-  operations.push({ name, amount, type });
+  const category = opCategory.value;
+operations.push({ name, amount, type, category });
 
   opName.value = '';
   opAmount.value = '';
@@ -98,4 +120,7 @@ opAmount.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') addBtn.click();
 });
 
+opType.addEventListener('change', updateCategories);
+
 render();
+updateCategories();
