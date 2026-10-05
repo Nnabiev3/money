@@ -97,6 +97,7 @@ const inPeriod = () => period === 'all' ? operations : operations.filter(op => o
 
 // ===== Рендер =====
 function render() {
+  $('amountCurrency').textContent = settings.currency;
   save();
   fillPeriods();
   const ops = inPeriod();
@@ -283,7 +284,7 @@ function renderList(ops) {
       <span class="op-amount ${op.type}">${op.type === 'income' ? '+' : '−'}${money(op.amount)}</span>
       <button class="del-btn" title="Удалить">✕</button>`;
     li.querySelector('.op-name').textContent = op.name;
-    li.querySelector('.op-meta').textContent = `${op.category || 'Без категории'} · ${d.toLocaleDateString('ru-RU')}`;
+    li.querySelector('.op-meta').textContent = `${op.name === op.category ? '' : (op.category || 'Без категории') + ' · '}${d.toLocaleDateString('ru-RU')}`;
     li.querySelector('.del-btn').onclick = () => {
       operations = operations.filter(o => o.id !== op.id);
       render();
@@ -296,30 +297,71 @@ function renderList(ops) {
 // ===== Форма =====
 const currentType = () => document.querySelector('input[name="opType"]:checked').value;
 
+let selectedCategory = '';
+
 function updateCategories() {
-  const sel = $('opCategory');
-  sel.innerHTML = '';
-  settings.categories[currentType()].forEach(cat => {
-    const o = document.createElement('option');
-    o.value = o.textContent = cat;
-    sel.append(o);
+  const box = $('categoryChips');
+  const type = currentType();
+  const cats = settings.categories[type];
+  if (!cats.includes(selectedCategory)) selectedCategory = cats[0];
+  box.innerHTML = '';
+  cats.forEach(cat => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip-btn' + (cat === selectedCategory ? ' active' : '');
+    b.style.setProperty('--c', colorFor(type, cat));
+    b.textContent = cat;
+    b.onclick = () => { selectedCategory = cat; updateCategories(); };
+    box.append(b);
   });
 }
 
+// Дата: сегодня / вчера / произвольная
+function dateOffset(days) {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return monthKey(d) + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function updateDateChips() {
+  const val = $('opDate').value;
+  let custom = true;
+  document.querySelectorAll('#dateChips [data-day]').forEach(b => {
+    const on = dateOffset(Number(b.dataset.day)) === val;
+    b.classList.toggle('active', on);
+    if (on) custom = false;
+  });
+  $('datePickBtn').classList.toggle('active', custom);
+  $('datePickText').textContent = custom
+    ? new Date(val + 'T12:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+    : 'Другая дата';
+}
+
+document.querySelectorAll('#dateChips [data-day]').forEach(b => {
+  b.onclick = () => { $('opDate').value = dateOffset(Number(b.dataset.day)); updateDateChips(); };
+});
+$('opDate').addEventListener('change', () => { if (!$('opDate').value) $('opDate').value = today(); updateDateChips(); });
+$('datePickBtn').addEventListener('click', e => {
+  if (e.target.id === 'opDate') return;
+  e.preventDefault();
+  try { $('opDate').showPicker(); } catch (err) { $('opDate').focus(); }
+});
+
 $('opForm').addEventListener('submit', e => {
   e.preventDefault();
-  const name = $('opName').value.trim();
   const amount = Number($('opAmount').value);
-  if (!name || !(amount > 0)) {
-    toast('Заполни название и сумму больше 0');
+  if (!(amount > 0)) {
+    toast('Укажи сумму больше 0');
+    $('opAmount').focus();
     return;
   }
+  const name = $('opName').value.trim() || selectedCategory;
   const dateVal = $('opDate').value || today();
   const date = new Date(dateVal + 'T12:00:00').toISOString();
-  operations.push({ id: Date.now().toString(36), name, amount, type: currentType(), category: $('opCategory').value, date });
+  operations.push({ id: Date.now().toString(36), name, amount, type: currentType(), category: selectedCategory, date });
   $('opName').value = '';
   $('opAmount').value = '';
-  $('opName').focus();
+  $('opAmount').focus();
   render();
   toast('Операция добавлена ✓');
 });
@@ -434,6 +476,7 @@ $('clearBtn').onclick = () => {
 
 // ===== Старт =====
 $('opDate').value = today();
+updateDateChips();
 applyTheme();
 updateCategories();
 render();

@@ -194,9 +194,53 @@ button:active { transform: scale(.97); }
 .icon-btn:hover { background: var(--border); }
 
 /* ===== Форма ===== */
-.op-form { display: grid; grid-template-columns: auto 2fr 1fr 1fr auto auto; gap: 10px; }
-@media (max-width: 900px) { .op-form { grid-template-columns: 1fr 1fr; } .segmented { grid-column: span 2; } }
-@media (max-width: 520px) { .op-form { grid-template-columns: 1fr; } .segmented { grid-column: span 1; } }
+.op-form { display: grid; grid-template-columns: auto 1fr 2fr auto; gap: 12px; align-items: stretch; }
+.form-row { grid-column: 1 / -1; display: flex; gap: 12px; align-items: flex-start; }
+.row-label { width: 80px; flex-shrink: 0; padding-top: 7px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+@media (max-width: 900px) {
+  .op-form { grid-template-columns: 1fr 1fr; }
+  .segmented, #opName, .op-form .btn-primary { grid-column: span 2; }
+}
+@media (max-width: 520px) {
+  .op-form { grid-template-columns: 1fr; }
+  .segmented, #opName, .op-form .btn-primary, .amount-field { grid-column: span 1; }
+  .form-row { flex-direction: column; gap: 6px; }
+  .row-label { padding-top: 0; }
+}
+
+.amount-field { position: relative; display: flex; align-items: center; }
+.amount-field input { width: 100%; font-size: 18px; font-weight: 700; padding-right: 40px; }
+.amount-field span { position: absolute; right: 14px; color: var(--text-muted); font-weight: 600; pointer-events: none; }
+.amount-field input::-webkit-outer-spin-button,
+.amount-field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.amount-field input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-btn {
+  --c: var(--accent);
+  position: relative;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 99px;
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+  background: var(--inset); border: 1px solid var(--border);
+  cursor: pointer; transition: .18s;
+}
+.chip-btn::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c);
+}
+#dateChips .chip-btn::before { display: none; }
+.chip-btn:hover { color: var(--text); border-color: var(--c); }
+.chip-btn.active {
+  color: #fff; background: var(--c); border-color: var(--c);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--c) 45%, transparent);
+}
+.chip-btn.active::before { background: #fff; }
+
+.date-pick input {
+  position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%;
+  padding: 0; border: none; cursor: pointer;
+}
+.date-pick input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
 .segmented { display: flex; background: var(--inset); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
 .segmented input { display: none; }

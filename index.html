@@ -107,11 +107,28 @@
           <input type="radio" name="opType" id="typeIncome" value="income">
           <label for="typeIncome">Доход</label>
         </div>
-        <input type="text" id="opName" placeholder="Название" required>
-        <input type="number" id="opAmount" placeholder="Сумма" min="0.01" step="0.01" required>
-        <select id="opCategory"></select>
-        <input type="date" id="opDate">
+        <div class="amount-field">
+          <input type="number" id="opAmount" placeholder="0" min="0.01" step="0.01" required>
+          <span id="amountCurrency">₽</span>
+        </div>
+        <input type="text" id="opName" placeholder="Комментарий (необязательно)">
         <button type="submit" class="btn-primary">Добавить</button>
+
+        <div class="form-row">
+          <span class="row-label">Категория</span>
+          <div class="chips" id="categoryChips"></div>
+        </div>
+        <div class="form-row">
+          <span class="row-label">Дата</span>
+          <div class="chips" id="dateChips">
+            <button type="button" class="chip-btn" data-day="0">Сегодня</button>
+            <button type="button" class="chip-btn" data-day="1">Вчера</button>
+            <label class="chip-btn date-pick" id="datePickBtn">
+              <span>📅 <span id="datePickText">Другая дата</span></span>
+              <input type="date" id="opDate">
+            </label>
+          </div>
+        </div>
       </form>
     </section>
 
