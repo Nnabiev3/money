@@ -21,6 +21,10 @@
     </div>
     <div class="topbar-actions">
       <select id="periodSelect" title="Период"></select>
+      <label class="import-btn" title="Загрузить выписку из банка (CSV, Excel, PDF)">
+        📥 <span>Выписка</span>
+        <input type="file" id="statementInput" accept=".csv,.xlsx,.xls,.pdf" hidden>
+      </label>
       <button class="icon-btn" id="themeBtn" title="Сменить тему">🌓</button>
       <button class="icon-btn" id="settingsBtn" title="Настройки">⚙️</button>
     </div>
@@ -202,8 +206,29 @@
     </form>
   </dialog>
 
+  <!-- Импорт выписки -->
+  <dialog id="importDialog" class="import-dialog">
+    <div class="settings">
+      <div class="card-head">
+        <div>
+          <h2>Импорт выписки</h2>
+          <p class="muted" id="importFileName"></p>
+        </div>
+        <button type="button" class="chip-btn" id="importAll">Выбрать все</button>
+      </div>
+      <p class="muted" id="importSummary"></p>
+      <p class="hint">Проверь категории. Дубли и переводы между своими счетами отключены по умолчанию.</p>
+      <ul id="importList" class="import-list"></ul>
+      <div class="dialog-actions">
+        <button type="button" id="importCancel">Отмена</button>
+        <button type="button" class="btn-primary" id="importConfirm">Импортировать</button>
+      </div>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast"></div>
 
   <script src="js/script.js"></script>
+  <script src="js/import.js"></script>
 </body>
 </html>

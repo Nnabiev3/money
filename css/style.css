@@ -228,7 +228,7 @@ button:active { transform: scale(.97); }
 .chip-btn::before {
   content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c);
 }
-#dateChips .chip-btn::before { display: none; }
+#dateChips .chip-btn::before, #importAll::before { display: none; }
 .chip-btn:hover { color: var(--text); border-color: var(--c); }
 .chip-btn.active {
   color: #fff; background: var(--c); border-color: var(--c);
@@ -318,3 +318,36 @@ dialog::backdrop { background: rgba(0, 0, 0, .55); backdrop-filter: blur(4px); }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ===== Импорт выписки ===== */
+.import-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 14px;
+  border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 6px 18px rgba(99, 102, 241, .35); transition: filter .2s;
+}
+.import-btn:hover { filter: brightness(1.1); }
+@media (max-width: 520px) { .import-btn span { display: none; } }
+
+.import-dialog { width: min(720px, calc(100% - 24px)); }
+.import-dialog .card-head { margin-bottom: 0; }
+.hint { font-size: 12px; color: var(--text-muted); background: var(--inset); padding: 8px 12px; border-radius: 10px; }
+.import-list { list-style: none; display: flex; flex-direction: column; gap: 4px; max-height: 55vh; overflow-y: auto; margin: 0 -8px; padding: 0 8px; }
+.import-list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; transition: opacity .2s, background .2s; }
+.import-list li:hover { background: var(--inset); }
+.import-list li.off { opacity: .4; }
+.import-list input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+.imp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.imp-name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.imp-info small { color: var(--text-muted); font-size: 12px; }
+.imp-info em { color: var(--amber); font-style: normal; }
+.imp-cat { padding: 5px 8px; font-size: 12px; border-radius: 8px; max-width: 140px; }
+.import-list .op-amount { font-size: 14px; min-width: 90px; text-align: right; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 520px) {
+  .import-list li { flex-wrap: wrap; }
+  .imp-info { flex-basis: calc(100% - 40px); }
+  .imp-cat { margin-left: 28px; }
+  .import-list .op-amount { margin-left: auto; }
+}
