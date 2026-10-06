@@ -351,3 +351,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .55); backdrop-filter: blur(4px); }
   .imp-cat { margin-left: 28px; }
   .import-list .op-amount { margin-left: auto; }
 }
+
+/* ===== Внутри Telegram ===== */
+.tg body { padding-top: 12px; }
+.tg .subtitle { display: none; }

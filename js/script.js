@@ -35,9 +35,19 @@ function getMonthTarget() {
   return Number(localStorage.getItem('monthTarget')) || 100000;
 }
 
+let lastSaved = '';
+
 function save() {
+  const snapshot = JSON.stringify([operations, settings, getMonthTarget()]);
   localStorage.setItem('operations', JSON.stringify(operations));
   localStorage.setItem('settings', JSON.stringify(settings));
+  if (snapshot === lastSaved) return;
+  // Первый вызов при загрузке — не изменение, просто запоминаем состояние
+  if (lastSaved) {
+    localStorage.setItem('updatedAt', Date.now());
+    document.dispatchEvent(new Event('money:changed'));
+  }
+  lastSaved = snapshot;
 }
 
 // ===== Утилиты =====
