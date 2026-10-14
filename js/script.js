@@ -68,13 +68,40 @@ function plural(n, forms) {
   return forms[2];
 }
 
-function toast(text) {
+const ICON_X = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="18" height="18"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+const TOAST_MS = 2200;
+const TOAST_ACTION_MS = 5000;
+let toastTimer;
+
+// action = { label, run } — кнопка в тосте (например, «Отменить»)
+function toast(text, action) {
   const t = $('toast');
-  t.textContent = text;
+  const msg = document.createElement('span');
+  msg.textContent = text;
+  t.replaceChildren(msg);
+  t.classList.toggle('has-action', Boolean(action));
+  if (action) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toast-action';
+    btn.textContent = action.label;
+    btn.onclick = () => { t.classList.remove('show'); action.run(); };
+    t.append(btn);
+  }
   t.classList.add('show');
-  clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => t.classList.remove('show'), 2200);
+  scheduleToastHide(action ? TOAST_ACTION_MS : TOAST_MS);
 }
+
+function scheduleToastHide(ms) {
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), ms);
+}
+
+// Пока на тосте мышь или фокус — не прячем, чтобы успеть нажать «Отменить»
+$('toast').addEventListener('mouseenter', () => clearTimeout(toastTimer));
+$('toast').addEventListener('focusin', () => clearTimeout(toastTimer));
+$('toast').addEventListener('mouseleave', () => $('toast').classList.contains('show') && scheduleToastHide(TOAST_MS));
+$('toast').addEventListener('focusout', () => $('toast').classList.contains('show') && scheduleToastHide(TOAST_MS));
 
 function colorFor(type, cat) {
   const idx = settings.categories[type].indexOf(cat);
@@ -127,7 +154,7 @@ function renderKpi(ops) {
   $('totalIncome').textContent = money(income);
   $('totalExpense').textContent = money(expense);
   $('balance').textContent = money(balance);
-  $('balance').style.color = balance < 0 ? 'var(--red)' : '';
+  $('balance').style.color = balance < 0 ? 'var(--red-text)' : '';
   $('savingsRate').textContent = (income > 0 ? Math.round(balance / income * 100) : 0) + '%';
   $('incomeCount').textContent = `${inc.length} ${plural(inc.length, ['операция', 'операции', 'операций'])}`;
   $('expenseCount').textContent = `${exp.length} ${plural(exp.length, ['операция', 'операции', 'операций'])}`;
@@ -280,7 +307,7 @@ function renderList(ops) {
     .sort((a, b) => b.date.localeCompare(a.date));
 
   if (!shown.length) {
-    list.innerHTML = `<li class="empty">${operations.length ? 'Ничего не найдено' : 'Пока нет операций. Добавь первую 👆'}</li>`;
+    list.innerHTML = `<li class="empty">${operations.length ? 'Ничего не найдено' : 'Пока нет операций. Добавь первую в форме выше'}</li>`;
     return;
   }
 
@@ -289,18 +316,34 @@ function renderList(ops) {
     const color = colorFor(op.type, op.category);
     const d = new Date(op.date);
     li.innerHTML = `
-      <span class="op-icon" style="background:${color}22;color:${color}">${(op.category || '?')[0]}</span>
+      <span class="op-icon" aria-hidden="true" style="background:${color}22;color:${color}">${(op.category || '?')[0]}</span>
       <div class="op-info"><b class="op-name"></b><small class="op-meta"></small></div>
       <span class="op-amount ${op.type}">${op.type === 'income' ? '+' : '−'}${money(op.amount)}</span>
-      <button class="del-btn" title="Удалить">✕</button>`;
+      <button class="del-btn" type="button">${ICON_X}</button>`;
     li.querySelector('.op-name').textContent = op.name;
     li.querySelector('.op-meta').textContent = `${op.name === op.category ? '' : (op.category || 'Без категории') + ' · '}${d.toLocaleDateString('ru-RU')}`;
-    li.querySelector('.del-btn').onclick = () => {
-      operations = operations.filter(o => o.id !== op.id);
-      render();
-      toast('Операция удалена');
-    };
+    const delBtn = li.querySelector('.del-btn');
+    delBtn.title = `Удалить операцию «${op.name}»`;
+    delBtn.setAttribute('aria-label', delBtn.title);
+    delBtn.onclick = () => deleteOperation(op);
     list.append(li);
+  });
+}
+
+// Удаление с возможностью отмены: операция возвращается на прежнее место
+function deleteOperation(op) {
+  const index = operations.findIndex(o => o.id === op.id);
+  operations = operations.filter(o => o.id !== op.id);
+  const afterDelete = operations;
+  render();
+  toast('Операция удалена', {
+    label: 'Отменить',
+    run: () => {
+      // Если данные за это время заменили (очистка, импорт JSON) — не возвращаем операцию в чужой набор
+      if (operations !== afterDelete) return toast('Отменить уже нельзя');
+      operations = [...operations.slice(0, index), op, ...operations.slice(index)];
+      render();
+    }
   });
 }
 
@@ -320,6 +363,7 @@ function updateCategories() {
     b.type = 'button';
     b.className = 'chip-btn' + (cat === selectedCategory ? ' active' : '');
     b.style.setProperty('--c', colorFor(type, cat));
+    b.setAttribute('aria-pressed', String(cat === selectedCategory));
     b.textContent = cat;
     b.onclick = () => { selectedCategory = cat; updateCategories(); };
     box.append(b);
@@ -339,6 +383,7 @@ function updateDateChips() {
   document.querySelectorAll('#dateChips [data-day]').forEach(b => {
     const on = dateOffset(Number(b.dataset.day)) === val;
     b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', String(on));
     if (on) custom = false;
   });
   $('datePickBtn').classList.toggle('active', custom);
@@ -404,6 +449,7 @@ function renderTags() {
       const x = document.createElement('button');
       x.type = 'button';
       x.textContent = '×';
+      x.setAttribute('aria-label', `Удалить категорию «${cat}»`);
       x.onclick = () => {
         if (settings.categories[type].length <= 1) return toast('Нужна хотя бы одна категория');
         settings.categories[type] = settings.categories[type].filter(c => c !== cat);
@@ -452,6 +498,8 @@ $('exportBtn').onclick = () => {
   a.click();
   URL.revokeObjectURL(a.href);
 };
+
+$('importJsonBtn').onclick = () => $('importInput').click();
 
 $('importInput').onchange = async e => {
   const file = e.target.files[0];

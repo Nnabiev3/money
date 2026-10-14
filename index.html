@@ -20,13 +20,18 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <select id="periodSelect" title="Период"></select>
-      <label class="import-btn" title="Загрузить выписку из банка (CSV, Excel, PDF)">
-        📥 <span>Выписка</span>
-        <input type="file" id="statementInput" accept=".csv,.xlsx,.xls,.pdf" hidden>
-      </label>
-      <button class="icon-btn" id="themeBtn" title="Сменить тему">🌓</button>
-      <button class="icon-btn" id="settingsBtn" title="Настройки">⚙️</button>
+      <select id="periodSelect" title="Период" aria-label="Период"></select>
+      <button type="button" class="import-btn" id="importBtn" title="Загрузить выписку из банка (CSV, Excel, PDF)" aria-label="Загрузить выписку из банка (CSV, Excel, PDF)">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+        <span>Выписка</span>
+      </button>
+      <input type="file" id="statementInput" hidden>
+      <button class="icon-btn" id="themeBtn" title="Сменить тему" aria-label="Сменить тему">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" title="Настройки" aria-label="Настройки">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg>
+      </button>
     </div>
   </header>
 
@@ -112,10 +117,10 @@
           <label for="typeIncome">Доход</label>
         </div>
         <div class="amount-field">
-          <input type="number" id="opAmount" placeholder="0" min="0.01" step="0.01" required>
-          <span id="amountCurrency">₽</span>
+          <input type="number" id="opAmount" placeholder="0" min="0.01" step="0.01" inputmode="decimal" aria-label="Сумма" required>
+          <span id="amountCurrency" aria-hidden="true">₽</span>
         </div>
-        <input type="text" id="opName" placeholder="Комментарий (необязательно)">
+        <input type="text" id="opName" placeholder="Комментарий (необязательно)" aria-label="Комментарий (необязательно)">
         <button type="submit" class="btn-primary">Добавить</button>
 
         <div class="form-row">
@@ -128,8 +133,8 @@
             <button type="button" class="chip-btn" data-day="0">Сегодня</button>
             <button type="button" class="chip-btn" data-day="1">Вчера</button>
             <label class="chip-btn date-pick" id="datePickBtn">
-              <span>📅 <span id="datePickText">Другая дата</span></span>
-              <input type="date" id="opDate">
+              <span class="date-pick-label"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="16" height="16"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> <span id="datePickText">Другая дата</span></span>
+              <input type="date" id="opDate" aria-label="Выбрать дату">
             </label>
           </div>
         </div>
@@ -141,8 +146,8 @@
       <div class="card-head">
         <h2>Операции</h2>
         <div class="filters">
-          <input type="search" id="searchInput" placeholder="Поиск…">
-          <select id="filterType">
+          <input type="search" id="searchInput" placeholder="Поиск…" aria-label="Поиск по операциям">
+          <select id="filterType" aria-label="Тип операций">
             <option value="all">Все</option>
             <option value="income">Доходы</option>
             <option value="expense">Расходы</option>
@@ -183,22 +188,23 @@
         <h3>Категории доходов</h3>
         <div class="tags" id="incomeTags"></div>
         <div class="tag-add">
-          <input type="text" id="newIncomeCat" placeholder="Новая категория">
-          <button type="button" data-add="income">+</button>
+          <input type="text" id="newIncomeCat" placeholder="Новая категория" aria-label="Новая категория дохода">
+          <button type="button" data-add="income" aria-label="Добавить категорию дохода">+</button>
         </div>
       </div>
       <div class="cat-editor">
         <h3>Категории расходов</h3>
         <div class="tags" id="expenseTags"></div>
         <div class="tag-add">
-          <input type="text" id="newExpenseCat" placeholder="Новая категория">
-          <button type="button" data-add="expense">+</button>
+          <input type="text" id="newExpenseCat" placeholder="Новая категория" aria-label="Новая категория расхода">
+          <button type="button" data-add="expense" aria-label="Добавить категорию расхода">+</button>
         </div>
       </div>
 
       <div class="data-actions">
         <button type="button" id="exportBtn">Экспорт JSON</button>
-        <label class="file-btn">Импорт JSON<input type="file" id="importInput" accept="application/json" hidden></label>
+        <button type="button" id="importJsonBtn">Импорт JSON</button>
+        <input type="file" id="importInput" accept="application/json" hidden>
         <button type="button" id="clearBtn" class="danger">Удалить все данные</button>
       </div>
 
@@ -226,7 +232,7 @@
     </div>
   </dialog>
 
-  <div id="toast" class="toast"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="js/script.js"></script>

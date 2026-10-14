@@ -229,6 +229,7 @@ let pending = [];
 
 function renderPreview() {
   const list = $('importList');
+  const scrollTop = list.scrollTop;
   list.innerHTML = '';
   pending.forEach((op, i) => {
     const li = document.createElement('li');
@@ -240,14 +241,19 @@ function renderPreview() {
         <b class="imp-name"></b>
         <small>${new Date(op.date).toLocaleDateString('ru-RU')}${op.duplicate ? ' · <em>уже есть</em>' : ''}${op.own ? ' · <em>свой перевод</em>' : ''}</small>
       </div>
-      <select class="imp-cat">${cats.map(c => `<option${c === op.category ? ' selected' : ''}></option>`).join('')}</select>
+      <select class="imp-cat" aria-label="Категория">${cats.map(c => `<option${c === op.category ? ' selected' : ''}></option>`).join('')}</select>
       <span class="op-amount ${op.type}">${op.type === 'income' ? '+' : '−'}${money(op.amount)}</span>`;
     li.querySelector('.imp-name').textContent = op.name;
     li.querySelectorAll('option').forEach((o, j) => { o.value = o.textContent = cats[j]; });
-    li.querySelector('input').onchange = e => { op.checked = e.target.checked; renderPreview(); };
+    const checkbox = li.querySelector('input');
+    checkbox.setAttribute('aria-label', op.name);
+    checkbox.onchange = e => { op.checked = e.target.checked; renderPreview(); };
     li.querySelector('select').onchange = e => { op.category = e.target.value; };
+    // Тап по всей строке переключает галочку — крупная цель вместо чекбокса 22px
+    li.onclick = e => { if (!e.target.closest('select, input')) checkbox.click(); };
     list.append(li);
   });
+  list.scrollTop = scrollTop;
   const n = pending.filter(o => o.checked).length;
   const skipped = pending.filter(o => o.duplicate).length;
   $('importSummary').textContent = `Найдено операций: ${pending.length}` + (skipped ? ` · дублей пропущено: ${skipped}` : '');
@@ -266,6 +272,8 @@ async function importFile(file) {
     toast(err.message || 'Не удалось прочитать файл');
   }
 }
+
+$('importBtn').onclick = () => $('statementInput').click();
 
 $('statementInput').onchange = e => {
   const file = e.target.files[0];

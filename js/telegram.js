@@ -25,9 +25,9 @@ if (inTelegram) {
 
   // Вибро-отклик на тосты (добавление, удаление, импорт)
   const origToast = toast;
-  toast = text => {
+  toast = (text, action) => {
     try { tg.HapticFeedback.notificationOccurred(/не |неверн|ошиб|укажи/i.test(text) ? 'error' : 'success'); } catch (e) { /* нет поддержки */ }
-    origToast(text);
+    origToast(text, action);
   };
 }
 
