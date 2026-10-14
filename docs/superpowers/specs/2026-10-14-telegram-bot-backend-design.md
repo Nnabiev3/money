@@ -1,6 +1,6 @@
 # Telegram-бот и серверная синхронизация — дизайн
 
-Дата: 2026-10-14. Статус: черновик на утверждение.
+Дата: 2026-10-14. Статус: утверждена, реализована по плану `docs/superpowers/plans/2026-10-14-telegram-bot-backend.md`.
 
 Это подпроект 1 из трёх. Два других строятся поверх него и в эту спеку **не входят**:
 
@@ -95,8 +95,8 @@ CREATE INDEX idx_ops_user_date    ON operations (user_id, date);
 CREATE INDEX idx_ops_user_created ON operations (user_id, created_at);
 
 CREATE TABLE processed_updates (update_id INTEGER PRIMARY KEY, at INTEGER NOT NULL);
-CREATE TABLE rate_limits (user_id INTEGER NOT NULL, minute INTEGER NOT NULL,
-                          count INTEGER NOT NULL, PRIMARY KEY (user_id, minute));
+CREATE TABLE rate_limits (user_id INTEGER NOT NULL, scope TEXT NOT NULL, minute INTEGER NOT NULL,
+                          count INTEGER NOT NULL, PRIMARY KEY (user_id, scope, minute));
 ```
 
 - Формат операции остаётся таким же, как в приложении: `{id, name, amount, type, category, date, source}`.
@@ -172,7 +172,7 @@ CREATE TABLE rate_limits (user_id INTEGER NOT NULL, minute INTEGER NOT NULL,
 - **Изменения:** по событию `money:changed` (оно уже генерируется в `save()`) клиент считает разницу между текущим состоянием и последним снимком сервера (по `id`: добавлены, изменены, удалены; настройки отдельно) и отправляет её в `POST /api/sync`. При успехе снимок обновляется. При сбое снимок не трогается, и разница пересчитается при следующем изменении или запуске. Отдельная очередь не нужна.
 - **Возврат в приложение** (`visibilitychange`): сначала отправляется накопленная разница, потом `GET /api/data`. Так операции, добавленные ботом, появляются без перезапуска.
 - **Конфликты:** побеждает последняя запись по каждой операции и по настройкам. Для личного учёта этого достаточно.
-- **Первая миграция** (флаг `syncedOnce` в `localStorage` не стоит): операции объединяются по `id` (локальные, которых нет на сервере, загружаются пачками по 500). Настройки: если на сервере они равны значениям по умолчанию, берутся локальные; иначе серверные. Затем флаг ставится. Из CloudStorage данные не читаются: `initCloudSync` и так зеркалил их в `localStorage` при каждом запуске.
+- **Первая миграция** (флаг `syncedOnce` в `localStorage` не стоит): операции объединяются по `id` (локальные, которых нет на сервере, загружаются пачками по 100). Настройки: если на сервере они равны значениям по умолчанию, берутся локальные; иначе серверные. Затем флаг ставится. Из CloudStorage данные не читаются: `initCloudSync` и так зеркалил их в `localStorage` при каждом запуске.
 - **`?action=import`:** открывает окно «Загрузить выписку» с кнопкой «Выберите файл» (раздел 5). Параметр читается из `location.search` один раз при старте и после открытия окна убирается из адреса, чтобы обновление страницы не открывало его снова.
 
 ## 9. Общее ядро для следующих подпроектов
