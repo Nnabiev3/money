@@ -1,0 +1,13 @@
+name = "money-bot"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[vars]
+APP_URL = "https://nnabiev3.github.io/money/"
+ALLOWED_ORIGIN = "https://nnabiev3.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "money-bot"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
