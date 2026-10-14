@@ -43,10 +43,7 @@ function save() {
   localStorage.setItem('settings', JSON.stringify(settings));
   if (snapshot === lastSaved) return;
   // Первый вызов при загрузке — не изменение, просто запоминаем состояние
-  if (lastSaved) {
-    localStorage.setItem('updatedAt', Date.now());
-    document.dispatchEvent(new Event('money:changed'));
-  }
+  if (lastSaved) document.dispatchEvent(new Event('money:changed'));
   lastSaved = snapshot;
 }
 

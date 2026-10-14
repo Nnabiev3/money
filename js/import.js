@@ -301,3 +301,18 @@ $('importConfirm').onclick = () => {
   render();
   toast(`Импортировано операций: ${chosen.length} ✓`);
 };
+
+
+// Вход по кнопке «Добавить выписку» из чата бота: адрес с ?action=import.
+// Выбор файла нельзя открыть без касания, поэтому показываем окно с кнопкой «Выберите файл».
+$('importPromptChoose').onclick = () => {
+  $('importPrompt').close();
+  $('statementInput').click();
+};
+$('importPromptCancel').onclick = () => $('importPrompt').close();
+
+if (new URLSearchParams(location.search).get('action') === 'import') {
+  // убираем параметр, чтобы обновление страницы не открывало окно снова (hash с данными Telegram сохраняем)
+  history.replaceState(null, '', location.pathname + location.hash);
+  $('importPrompt').showModal();
+}

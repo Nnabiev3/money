@@ -232,11 +232,24 @@
     </div>
   </dialog>
 
+  <!-- Вход по кнопке «Добавить выписку» из чата Telegram: сразу предлагаем выбрать файл -->
+  <dialog id="importPrompt">
+    <div class="settings">
+      <h2>Загрузить выписку</h2>
+      <p class="muted">Подойдут CSV, Excel и PDF из банка. Перед сохранением вы увидите предпросмотр операций.</p>
+      <button type="button" class="btn-primary" id="importPromptChoose">Выберите файл</button>
+      <button type="button" id="importPromptCancel">Отмена</button>
+    </div>
+  </dialog>
+
   <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="js/script.js"></script>
   <script src="js/import.js"></script>
   <script src="js/telegram.js"></script>
+  <script src="js/sync-core.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
 </body>
 </html>
