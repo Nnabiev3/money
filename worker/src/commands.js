@@ -3,9 +3,9 @@ import { deleteAllStatements, deleteOperation, ensureUser, listLastOperations } 
 import { BOT_RATE_PER_MINUTE, hitRateLimit, isAllowed } from './limits.js';
 import {
   addedText, BLOCKED_TEXT, DELETE_CONFIRM_TEXT, DELETED_TEXT, HELP_TEXT, LIMIT_TEXT, NO_OPERATIONS_TEXT,
-  RATE_LIMIT_TEXT, STATEMENT_TEXT, UNKNOWN_TEXT, undoneText, usageText, WELCOME_TEXT
+  freeTextHintText, RATE_LIMIT_TEXT, STATEMENT_TEXT, UNKNOWN_TEXT, undoneText, usageText, WELCOME_TEXT
 } from './messages.js';
-import { parseAmountAndText, parseCommand } from './parse.js';
+import { parseAmountAndText, parseCommand, parseFreeText } from './parse.js';
 import { balanceCommand, lastCommand, monthCommand } from './reports.js';
 import { appKeyboard, confirmDeleteKeyboard, undoKeyboard } from './telegram.js';
 
@@ -31,15 +31,10 @@ const help = ctx => ctx.tg.send(ctx.chatId, HELP_TEXT, appKeyboard(ctx.appUrl));
 
 const statement = ctx => ctx.tg.send(ctx.chatId, STATEMENT_TEXT, appKeyboard(ctx.appUrl));
 
-const addByCommand = (type, command) => async ctx => {
-  const parsed = parseAmountAndText(ctx.args);
-  if (!parsed.ok) {
-    await ctx.tg.send(ctx.chatId, usageText(command, parsed.reason));
-    return;
-  }
+async function recordOperation(ctx, type, { amount, text }) {
   try {
     const result = await addOperation(ctx.db, ctx.userId, {
-      type, amount: parsed.amount, text: parsed.text, updateId: ctx.updateId, nowMs: ctx.nowMs
+      type, amount, text, updateId: ctx.updateId, nowMs: ctx.nowMs
     });
     if (!result.inserted) return; // повтор того же обновления: уже обработано и отвечено
     await ctx.tg.send(ctx.chatId, addedText(result, result.settings.currency), undoKeyboard(result.operation.id));
@@ -47,7 +42,26 @@ const addByCommand = (type, command) => async ctx => {
     if (!(error instanceof LimitError)) throw error;
     await ctx.tg.send(ctx.chatId, LIMIT_TEXT);
   }
+}
+
+const addByCommand = (type, command) => async ctx => {
+  const parsed = parseAmountAndText(ctx.args);
+  if (!parsed.ok) {
+    await ctx.tg.send(ctx.chatId, usageText(command, parsed.reason));
+    return;
+  }
+  await recordOperation(ctx, type, parsed);
 };
+
+/** Обычная фраза без команды: «200 такси», «покушал на 300». Без числа — прежняя подсказка про /help. */
+async function addFromFreeText(ctx, messageText) {
+  const parsed = parseFreeText(messageText);
+  if (parsed.ok) {
+    await recordOperation(ctx, parsed.type, parsed);
+    return;
+  }
+  await ctx.tg.send(ctx.chatId, parsed.reason === 'format' ? UNKNOWN_TEXT : freeTextHintText(parsed.reason));
+}
 
 const undo = async ctx => {
   const [last] = await listLastOperations(ctx.db, ctx.userId, 1);
@@ -144,10 +158,15 @@ export async function handleUpdate(update, ctx) {
   }
 
   const command = parseCommand(message.text);
-  const handler = command && COMMANDS[command.name];
+  const base = { ...ctx, userId, chatId, updateId: update.update_id };
+  if (!command) {
+    await addFromFreeText(base, message.text);
+    return;
+  }
+  const handler = COMMANDS[command.name];
   if (!handler) {
     await ctx.tg.send(chatId, UNKNOWN_TEXT);
     return;
   }
-  await handler({ ...ctx, userId, chatId, updateId: update.update_id, args: command.args });
+  await handler({ ...base, args: command.args });
 }

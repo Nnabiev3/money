@@ -103,6 +103,48 @@ describe('access rules', () => {
     expect(lastReply(ctx)[1]).toContain('Слишком много');
   });
 
+  it('records plain text like «200 такси» and «покушал на 300» as expenses', async () => {
+    const ctx = makeCtx(db);
+    await handleUpdate(textUpdate(' 200 такси', { updateId: 1 }), ctx);
+    await handleUpdate(textUpdate('покушал на 300', { updateId: 2 }), ctx);
+
+    const stored = await listOperations(db, 1);
+    expect(stored.map(o => [o.type, o.amount, o.category, o.name])).toEqual(
+      expect.arrayContaining([['expense', 200, 'Транспорт', 'такси'], ['expense', 300, 'Еда', 'Еда']])
+    );
+    expect(lastReply(ctx)[1]).toContain('✅ Расход 300 ₽ · Еда');
+    expect(lastReply(ctx)[2].inline_keyboard[0][0].callback_data).toMatch(/^undo:/);
+  });
+
+  it('records plain text with a plus or income words as income', async () => {
+    const ctx = makeCtx(db);
+    await handleUpdate(textUpdate('+5000 зарплата'), ctx);
+    expect((await listOperations(db, 1))[0]).toMatchObject({ type: 'income', amount: 5000, category: 'Зарплата' });
+    expect(lastReply(ctx)[1]).toContain('✅ Доход');
+  });
+
+  it('records a repeated Telegram update only once', async () => {
+    const ctx = makeCtx(db);
+    await handleUpdate(textUpdate('200 такси', { updateId: 7 }), ctx);
+    await handleUpdate(textUpdate('200 такси', { updateId: 7 }), ctx);
+    expect(await countOperations(db, 1)).toBe(1);
+    expect(ctx.tg.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks about an ambiguous amount instead of guessing and stores nothing', async () => {
+    const ctx = makeCtx(db);
+    await handleUpdate(textUpdate('купил 2 пива 300'), ctx);
+    expect(await countOperations(db, 1)).toBe(0);
+    expect(lastReply(ctx)[1]).toContain('Не понял сумму');
+  });
+
+  it('explains a bad plain-text amount and stores nothing', async () => {
+    const ctx = makeCtx(db);
+    await handleUpdate(textUpdate('0 такси'), ctx);
+    expect(await countOperations(db, 1)).toBe(0);
+    expect(lastReply(ctx)[1]).toContain('больше нуля');
+  });
+
   it('hints at /help for unknown commands and plain text', async () => {
     const ctx = makeCtx(db);
     await handleUpdate(textUpdate('/nope'), ctx);

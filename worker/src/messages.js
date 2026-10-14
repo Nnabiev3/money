@@ -11,7 +11,11 @@ export const HELP_TEXT = [
   '/last 5 — последние операции',
   '/undo — удалить последнюю операцию',
   '/statement — загрузить банковскую выписку',
-  '/deleteall — удалить все мои данные'
+  '/deleteall — удалить все мои данные',
+  '',
+  '<b>Можно без команд</b>',
+  'Просто напишите: <code>200 такси</code> или <code>покушал на 300</code> — запишу расход.',
+  'Доход: <code>+5000 зарплата</code> или <code>получил 3000 за подработку</code>.'
 ].join('\n');
 
 export const WELCOME_TEXT = `👋 Привет! Я веду учёт доходов и расходов.\n\n${HELP_TEXT}`;
@@ -28,12 +32,19 @@ const USAGE_REASONS = {
   format: 'Не понял сумму.',
   decimals: 'В сумме не больше двух знаков после запятой.',
   positive: 'Сумма должна быть больше нуля.',
-  too_big: 'Слишком большая сумма.'
+  too_big: 'Слишком большая сумма.',
+  ambiguous: 'Не понял сумму: в сообщении несколько чисел.'
 };
 
 /** @param {string} command 'spent' | 'income' @param {string} reason ключ из USAGE_REASONS */
 export function usageText(command, reason) {
   return `${USAGE_REASONS[reason] ?? USAGE_REASONS.format}\nПример: <code>/${command} 500 такси</code>`;
+}
+
+/** Подсказка, когда обычную фразу не удалось записать как операцию. @param {string} reason ключ из USAGE_REASONS */
+export function freeTextHintText(reason) {
+  return `${USAGE_REASONS[reason] ?? USAGE_REASONS.format}\nПример: <code>200 такси</code> или <code>покушал на 300</code>. ` +
+    'Если чисел несколько, поставьте сумму после «на» или «за» либо добавьте «р».';
 }
 
 const nameSuffix = op => (op.name === op.category ? '' : ` · ${escapeHtml(op.name)}`);
