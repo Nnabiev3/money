@@ -6,6 +6,7 @@ import {
   RATE_LIMIT_TEXT, STATEMENT_TEXT, UNKNOWN_TEXT, undoneText, usageText, WELCOME_TEXT
 } from './messages.js';
 import { parseAmountAndText, parseCommand } from './parse.js';
+import { balanceCommand, lastCommand, monthCommand } from './reports.js';
 import { appKeyboard, confirmDeleteKeyboard, undoKeyboard } from './telegram.js';
 
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
@@ -67,6 +68,9 @@ const COMMANDS = {
   statement,
   spent: addByCommand('expense', 'spent'),
   income: addByCommand('income', 'income'),
+  balance: balanceCommand,
+  month: monthCommand,
+  last: lastCommand,
   undo,
   deleteall: deleteAll
 };
