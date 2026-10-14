@@ -9,5 +9,5 @@ ALLOWED_ORIGIN = "https://nnabiev3.github.io"
 [[d1_databases]]
 binding = "DB"
 database_name = "money-bot"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "e48b43f5-2872-4a8a-9f15-42934a0386e4"
 migrations_dir = "migrations"
